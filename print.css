@@ -1,0 +1,81 @@
+@media print {
+    /* 1. Esconde a interface principal */
+    body > * {
+        /* Esconde todos os filhos diretos do body */
+        display: none !important;
+    }
+
+    /* 2. Mostra APENAS o container do cupom de impressão */
+    #cupomParaImprimir {
+        display: block !important;
+        position: static; /* Volta para o fluxo normal */
+        margin: 0;
+        padding: 0;
+        width: 76mm; 
+        font-family: 'Consolas', 'Courier New', monospace;
+        font-size: 11pt;
+        color: #000;
+    }
+
+    /* Regras específicas de estilo para o cupom (mantidas) */
+    .cupom-print-content {
+        width: 100%;
+    }
+
+    .cupom-header h2 {
+        font-size: 14pt;
+        margin: 0;
+        text-align: center;
+    }
+
+    .cupom-header p, .cupom-footer p {
+        margin: 4px 0;
+        text-align: center;
+        font-size: 10pt;
+    }
+
+    .separator {
+        font-family: monospace;
+        letter-spacing: -1px;
+    }
+
+    .cupom-body {
+        margin: 15px 0;
+    }
+
+    .info-line {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 11pt;
+    }
+    
+    .info-line span:first-child {
+        text-align: left;
+    }
+
+    .info-line span:last-child, .info-line strong {
+        text-align: right;
+        word-break: break-all;
+    }
+    
+    .info-line.total {
+        font-size: 14pt;
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    hr.dashed {
+        border: none;
+        border-top: 1px dashed #000;
+        margin: 10px 0;
+    }
+
+    .cupom-footer {
+        margin-top: 15px;
+    }
+
+    @page {
+        margin: 2mm; 
+    }
+}

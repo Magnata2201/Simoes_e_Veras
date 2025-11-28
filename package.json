@@ -1,0 +1,50 @@
+{
+  "name": "simoes-gerador-comprovantes",
+  "version": "1.0.0",
+  "description": "Sistema Simões de Geração de Comprovantes e Logística",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "keywords": [
+    "electron",
+    "pdf",
+    "html2canvas",
+    "jspdf"
+  ],
+  "author": "Simões e Verduras",
+  "license": "ISC",
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1"
+  },
+  "devDependencies": {
+    "electron": "^28.2.1",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.simoes.comprovantes",
+    "productName": "Simões Gestão de Vendas",
+    "files": [
+      "main.js",
+      "index.html",
+      "style.css",
+      "print.css",
+      "script.js",
+      "simões.ico",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "simões.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "directories": {
+      "output": "dist"
+    }
+  }
+}
