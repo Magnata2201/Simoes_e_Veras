@@ -3,271 +3,752 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestão de Vendas v7.1 (Com Estoque e Fornecedor)</title>
-    
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="print.css" media="print">
+    <title>Sistema de Gestão ERP - Versão Simplificada</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <link rel="icon" href="simões.ico" type="image/x-icon">
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* =========================================
+           CSS - ESTILOS DO SISTEMA E INTERFACE
+           ========================================= */
+        :root {
+            --primary-blue: #005A9C; --secondary-blue: #004080;
+            --bg-color: #E8ECEF; --panel-bg: #FFFFFF;
+            --border-color: #B0B9C6; --text-dark: #333333;
+            --danger: #D32F2F; --success: #388E3C; --warning: #F57C00; --orange: #E65100;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-dark); font-size: 14px; }
+
+        /* BOTÕES MAIORES E FÁCEIS DE CLICAR */
+        .btn { padding: 10px 16px; border: 1px solid transparent; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; transition: all 0.2s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 1px 2px rgba(0,0,0,0.1); }
+        .btn-primary { background-color: var(--primary-blue); color: white; border-color: var(--secondary-blue); }
+        .btn-primary:hover { background-color: var(--secondary-blue); }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-success { background-color: var(--success); color: white; }
+        .btn-warning { background-color: var(--warning); color: white; }
+        .btn-secondary { background-color: #757575; color: white; }
+        .btn-info { background-color: #17a2b8; color: white; }
+        .btn-dark { background-color: #343a40; color: white; }
+        .btn-block { width: 100%; display: block; }
+        .mb-10 { margin-bottom: 10px; }
+
+        /* TELA DE LOGIN */
+        .login-container { display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #2b303a; }
+        .login-box { background: var(--panel-bg); padding: 30px; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); width: 100%; max-width: 400px; border-top: 4px solid var(--primary-blue); }
+        .login-header { text-align: center; margin-bottom: 20px; color: var(--primary-blue); }
+
+        /* LAYOUT PRINCIPAL */
+        .top-nav { background-color: var(--primary-blue); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); width: 100%; position: absolute; top: 0; left: 0; height: 60px; z-index: 100; }
+        .nav-brand { font-size: 18px; font-weight: bold; }
+        .nav-actions { display: flex; gap: 10px; align-items: center; }
+        .container { display: flex; flex-direction: column; min-height: 100vh; padding-top: 60px; }
+        .main-content { padding: 20px; background: var(--panel-bg); border: 1px solid var(--border-color); margin: 20px; border-radius: 4px; flex-grow: 1; }
+        .sidebar { padding: 20px; width: 100%; max-width: 320px; margin: 20px; background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 4px; }
+
+        /* FORMULÁRIOS */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 15px;}
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background-color: #FAFAFA; font-size: 15px; }
+        .form-group input:focus, .form-group select:focus { border-color: var(--primary-blue); outline: none; background-color: #FFF; }
+        .form-group input[readonly] { background-color: #e9ecef; font-weight: bold; color: var(--success); font-size: 18px;}
+
+        /* TABELAS */
+        .java-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        .java-table th, .java-table td { border: 1px solid var(--border-color); padding: 10px; text-align: left; }
+        .java-table th { background-color: #dbe4eb; font-weight: bold; position: sticky; top: 0; }
+
+        /* MODAIS */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: var(--panel-bg); margin: 3% auto; padding: 20px; border: 1px solid var(--border-color); width: 95%; max-width: 800px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary-blue); padding-bottom: 10px; margin-bottom: 15px; }
+        .close-button { color: #aaa; font-size: 32px; font-weight: bold; cursor: pointer; }
+        .close-button:hover { color: var(--danger); }
+
+        /* TOTAIS E EXTRAS */
+        .total-display { background-color: #f8f9fa; border: 1px solid var(--border-color); padding: 15px; border-radius: 4px; text-align: center; margin-top: 20px; }
+        .total-display h3 { color: #333; margin-bottom: 10px; font-size: 16px; font-weight: bold;}
+        .control-buttons-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;}
+        
+        /* OCULTAR IMPRESSÃO NA TELA */
+        #cupomParaImprimir, #relatorioParaImprimir { display: none; }
+
+        /* RESPONSIVIDADE */
+        @media (min-width: 900px) { .container { flex-direction: row; } .sidebar { margin-left: 0; } }
+        @media (max-width: 767px) { .form-grid { grid-template-columns: 1fr; } .control-buttons-grid { grid-template-columns: 1fr; } .top-nav { flex-direction: column; height: auto; padding: 15px; } .container { padding-top: 100px; } }
+
+        /* =========================================
+           CSS - MODO DE IMPRESSÃO PROFISSIONAL
+           ========================================= */
+        @media print {
+            @page { margin: 0; }
+            body { margin: 0; padding: 0; background-color: #fff; }
+            #loginScreen, #mainSystem, .modal { display: none !important; }
+
+            /* CUPOM TÉRMICO */
+            #cupomParaImprimir.is-printing { 
+                display: block !important; 
+                position: relative; 
+                width: 300px; 
+                margin: 0; padding: 15px;
+                font-family: 'Courier New', Courier, monospace; 
+                font-size: 14px; color: #000;
+            }
+            #cupomParaImprimir .cupom-header { text-align: center; margin-bottom: 10px; }
+            #cupomParaImprimir .separator { letter-spacing: 2px; margin: 4px 0; }
+            #cupomParaImprimir .info-line { display: flex; justify-content: space-between; margin: 6px 0; }
+            #cupomParaImprimir .dashed { border: none; border-top: 1px dashed #000; margin: 8px 0; }
+
+            /* RELATÓRIO A4 */
+            #relatorioParaImprimir.is-printing {
+                display: block !important;
+                position: relative;
+                width: 100%; margin: 0; padding: 20px;
+                font-family: Arial, sans-serif;
+            }
+            #relatorioParaImprimir table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+            #relatorioParaImprimir th, #relatorioParaImprimir td { border: 1px solid #000; padding: 10px; text-align: left; font-size: 14px; }
+            #relatorioParaImprimir th { background-color: #eee; -webkit-print-color-adjust: exact; }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
+
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h2><i class="fas fa-leaf"></i> SIMÕES E VERDURAS</h2><p>Acesso Restrito</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group mb-10"><label>Usuário:</label><input type="text" id="loginUser" required autocomplete="off"></div>
+                <div class="form-group mb-10"><label>Senha:</label><input type="password" id="loginPass" required></div>
+                <button type="submit" class="btn btn-primary btn-block" id="btnAcessar" style="margin-top: 15px;">Entrar no Sistema</button>
+                <p id="loginError" style="display:none; color: red; margin-top:15px; text-align:center; font-weight: bold;"></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="mainSystem" class="container" style="display: none;">
+        
+        <nav class="top-nav">
+            <div class="nav-brand">SIMÕES E VERDURAS ERP</div>
+            <div class="nav-actions">
+                <span id="currentUserDisplay" style="font-weight: bold; margin-right: 15px;">Usuário: Admin</span>
+                <button id="btnModalUsuarios" class="btn btn-secondary btn-sm"><i class="fas fa-users"></i> Usuários</button>
+                <button id="logoutBtn" class="btn btn-danger btn-sm"><i class="fas fa-sign-out-alt"></i> Sair</button>
+            </div>
+        </nav>
+
         <div class="main-content">
-            <header>
-                <h1>SIMÕES E VERDURAS</h1>
+            <header style="margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+                <h1 style="color: var(--primary-blue);"><i class="fas fa-shopping-cart"></i> Caixa / Fazer Venda</h1>
             </header>
             
             <form id="vendaForm">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="produto">Produto:</label>
-                        <input type="text" id="produto" placeholder="Nome do produto" list="listaProdutos" required autocomplete="off">
-                        <datalist id="listaProdutos"></datalist>
+                        <label>Produto:</label>
+                        <input type="text" id="vProduto" placeholder="Ex: Tomate" list="listaProdutosDatalist" required autocomplete="off">
+                        <datalist id="listaProdutosDatalist"></datalist>
                     </div>
-                    <div class="form-group">
-                        <label for="cliente">Cliente:</label>
-                        <input type="text" id="cliente" placeholder="Nome do cliente" required>
+                    <div class="form-group"><label>Cliente:</label><input type="text" id="vCliente" placeholder="Nome do cliente" required></div>
+                    <div class="form-group"><label>Tipo de Venda:</label>
+                        <select id="vTipo" required><option value="peso">Por Peso (Kg)</option><option value="caixa">Por Caixa (Unidade)</option><option value="unidade">Por Unidade (Pç)</option></select>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="tipo_venda">Tipo de Venda:</label>
-                        <select id="tipo_venda" required>
-                            <option value="peso">Por Peso (Kg)</option>
-                            <option value="caixa">Por Caixa (Unidade)</option>
-                            <option value="unidade">Por Unidade (Pç)</option>
-                        </select>
+                    <div class="form-group"><label>Pagamento:</label>
+                        <select id="vPagamento" required><option value="avista">À Vista (Pago na hora)</option><option value="aprazo">Fiado / A Prazo (Pendente)</option></select>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="preco_unitario">Preço (R$/item):</label>
-                        <input type="number" id="preco_unitario" step="0.01" placeholder="R$/Kg" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="quantidade">Quantidade:</label>
-                        <input type="number" id="quantidade" step="0.01" placeholder="Peso (Kg)" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="forma_pagamento">Pagamento:</label>
-                        <select id="forma_pagamento" required>
-                            <option value="avista">À Vista (Pago)</option>
-                            <option value="aprazo">A Prazo (Pendente)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="valor_total_display">Total (R$):</label>
-                        <input type="text" id="valor_total_display" value="0,00" readonly>
-                        <input type="hidden" id="valor"> 
-                    </div>
-                    <div class="form-group">
-                        <label for="motorista">Motorista (Apenas sistema):</label>
-                        <input type="text" id="motorista" placeholder="Nome do motorista">
-                    </div>
-                    <div class="form-group">
-                        <label for="placa">Placa (Apenas sistema):</label>
-                        <input type="text" id="placa" placeholder="ABC-1234">
+                    <div class="form-group"><label>Preço Unitário (R$):</label><input type="number" id="vPreco" step="0.01" required></div>
+                    <div class="form-group"><label>Quantidade:</label><input type="number" id="vQtd" step="0.01" required></div>
+                    <div class="form-group"><label>Motorista (Opcional):</label><input type="text" id="vMotorista" placeholder="Nome"></div>
+                    <div class="form-group"><label>Placa (Opcional):</label><input type="text" id="vPlaca" placeholder="ABC-1234"></div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Total a Pagar (R$):</label><input type="text" id="vTotalDisplay" value="0.00" readonly>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Salvar e Imprimir Cupom</button>
+                <button type="submit" class="btn btn-primary btn-block" style="font-size: 18px; padding: 15px;"><i class="fas fa-print"></i> Salvar Venda e Imprimir Cupom</button>
             </form>
 
-            <hr>
+            <hr style="margin: 30px 0; border: 0; border-top: 1px solid var(--border-color);">
 
             <section class="cupons-section">
-                <h2>Controle de Vendas</h2>
+                <h2 style="margin-bottom: 15px; color: var(--secondary-blue);"><i class="fas fa-folder-open"></i> Histórico de Vendas</h2>
                 <div class="control-buttons-grid">
-                    <button id="openPendentesModalBtn" class="btn btn-danger btn-lg">
-                        <i class="fas fa-file-invoice-dollar"></i> Ver Cupons Pendentes
-                    </button>
-                    <button id="openPagosModalBtn" class="btn btn-success btn-lg">
-                        <i class="fas fa-check-double"></i> Ver Cupons Pagos
-                    </button>
-                </div>
-                
-                <div style="margin-top: 30px;">
-                    <label for="dateInput" style="font-weight: 500;">Filtrar Totais por Data:</label>
-                    <div class="search-filters" style="margin-top: 5px;">
-                        <input type="date" id="dateInput">
-                        <button id="clearDateBtn" class="btn btn-secondary">Ver Hoje</button>
-                    </div>
+                    <button id="btnModalPendentes" class="btn btn-warning" style="padding: 15px; font-size: 16px;"><i class="fas fa-clock"></i> Ver Cupons Pendentes</button>
+                    <button id="btnModalPagos" class="btn btn-success" style="padding: 15px; font-size: 16px;"><i class="fas fa-check-double"></i> Ver Cupons Pagos</button>
                 </div>
             </section>
         </div>
 
         <aside class="sidebar">
-            <div class="total-container">
-                <button id="openEstoqueModalBtn" class="btn btn-primary" style="width: 100%; margin-bottom: 10px; background-color: #17a2b8;">
-                    <i class="fas fa-boxes"></i> Gerenciar Estoque
+            <button id="btnModalEstoque" class="btn btn-info btn-block mb-10" style="padding: 12px;"><i class="fas fa-boxes"></i> Compras de Mercadorias</button>
+            <button id="btnModalGastos" class="btn btn-danger btn-block mb-10" style="padding: 12px;"><i class="fas fa-file-invoice-dollar"></i> Registrar Despesa do Dia</button> 
+            <button id="btnModalRelatorios" class="btn btn-dark btn-block mb-10" style="padding: 12px; font-size: 15px;"><i class="fas fa-chart-line"></i> <strong>Gerar Relatório Fácil</strong></button> 
+            
+            <div class="total-display">
+                <h3>Resumo de Hoje (<span id="dataHojeResumo"></span>)</h3>
+                
+                <button id="btnToggleResumo" class="btn btn-secondary btn-block" style="margin: 10px auto; background-color: #6c757d;">
+                    <i class="fas fa-eye"></i> Mostrar Dinheiro do Caixa
                 </button>
-
-                <button id="openGastoModalBtn" class="btn btn-danger" style="width: 100%; margin-bottom: 20px;">Registrar Despesa</button> 
-                <button id="exporTotalBtn" class="btn btn-secondary">Expor Total</button>
-                <div id="totalVendas" class="total-display">
-                    <h3 id="totalTitle">Total do Dia (Lucro Líquido)</h3>
-                    <p id="valorTotal">R$ 0,00</p>
+                
+                <div id="resumoValores" style="display: none; margin-top: 15px;">
+                    <p style="font-size: 16px; color: #555;">Dinheiro de Vendas (Entrou):</p>
+                    <p id="totalEntradas" style="font-size: 20px; color: var(--success); font-weight: bold;">R$ 0,00</p>
+                    
+                    <p style="font-size: 16px; color: #555; margin-top:15px;">Despesas (Saiu):</p>
+                    <p id="totalSaidas" style="font-size: 20px; color: var(--danger); font-weight: bold;">R$ 0,00</p>
+                    
+                    <hr style="margin: 15px 0;">
+                    <p style="font-size: 16px; color: #333; font-weight: bold;">SALDO DO CAIXA HOJE:</p>
+                    <p id="lucroLiquido" style="font-size: 26px; color: var(--primary-blue); font-weight: bold;">R$ 0,00</p>
                 </div>
             </div>
-
-            <div class="backup-container" style="margin-top: 50px;">
-                <h3>Backup e Restauração</h3>
-                <button id="backupBtn" class="btn btn-primary" style="width: 100%; margin-bottom: 10px;">Baixar Backup (JSON)</button>
-                <input type="file" id="restoreFile" accept=".json" style="display: none;">
-                <button id="restoreBtn" class="btn btn-danger" style="width: 100%;">Restaurar Backup</button>
+            
+            <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid var(--border-color);">
+                <button id="btnBaixarBackup" class="btn btn-secondary btn-block mb-10"><i class="fas fa-download"></i> Salvar Cópia (Backup)</button>
+                <label for="inputImportarBackup" class="btn btn-warning btn-block" style="text-align: center; cursor: pointer; color: #000;">
+                    <i class="fas fa-upload"></i> Restaurar Cópia (Backup)
+                </label>
+                <input type="file" id="inputImportarBackup" accept=".json" style="display: none;">
             </div>
         </aside>
     </div>
 
+    <div id="modalRelatorios" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Relatório Financeiro Fácil</h2><span class="close-button" data-modal="modalRelatorios">&times;</span></div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group"><label>Ver a partir de que dia?</label><input type="date" id="relDataInicio"></div>
+                    <div class="form-group"><label>Até que dia?</label><input type="date" id="relDataFim"></div>
+                </div>
+                <button id="btnGerarRelatorio" class="btn btn-primary btn-block mb-10" style="padding: 15px; font-size: 18px;">Gerar Relatório</button>
+                
+                <div id="resultadoRelatorio" style="display: none; margin-top: 20px;">
+                    
+                    <div style="background-color: #f4f6f8; padding: 25px; border-radius: 8px; border: 2px solid #ccc; margin-bottom: 20px;">
+                        <h3 style="text-align: center; margin-bottom: 20px; color: #333; font-size: 20px;">RESUMO FÁCIL</h3>
+                        
+                        <p style="font-size: 18px; margin-bottom: 12px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">
+                            🟢 <strong>Vendas (Dinheiro que entrou):</strong> 
+                            <span id="relTotalEntradas" style="color: green; float: right; font-weight: bold;">R$ 0.00</span>
+                        </p>
+                        <p style="font-size: 18px; margin-bottom: 12px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">
+                            🔴 <strong>Despesas Diversas (Saiu):</strong> 
+                            <span id="relTotalSaidas" style="color: red; float: right; font-weight: bold;">R$ 0.00</span>
+                        </p>
+                        <p style="font-size: 18px; margin-bottom: 12px; border-bottom: 1px solid #ddd; padding-bottom: 8px;">
+                            🟠 <strong>Mercadorias Compradas (Saiu):</strong> 
+                            <span id="relTotalEstoque" style="color: #E65100; float: right; font-weight: bold;">R$ 0.00</span>
+                        </p>
+                        
+                        <div style="background-color: #fff; padding: 15px; border-radius: 6px; border: 2px solid var(--primary-blue); margin-top: 20px;">
+                            <p style="font-size: 24px; text-align: center; font-weight: bold;">
+                                💰 LUCRO (O que sobrou): <br><span id="relTotalLiquido" style="color: var(--primary-blue); font-size: 32px; display: block; margin-top: 10px;">R$ 0.00</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-bottom: 10px; color: #555;">Dia a Dia:</h3>
+                    <div style="max-height: 250px; overflow-y: auto; border: 1px solid #ccc; margin-bottom: 15px;">
+                        <table class="java-table" style="margin-top: 0;">
+                            <thead><tr><th>Data</th><th>Entrou (Vendas)</th><th>Saiu (Tudo)</th><th>Sobrou no Dia</th></tr></thead>
+                            <tbody id="relatorioTbody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="control-buttons-grid" style="margin-top: 20px;">
+                        <button id="btnImprimirRelatorio" class="btn btn-secondary" style="padding: 15px;"><i class="fas fa-print"></i> Imprimir no Papel</button>
+                        <button id="btnBaixarPDF" class="btn btn-danger" style="padding: 15px;"><i class="fas fa-file-pdf"></i> Salvar PDF no Celular</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalEstoque" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Compras de Mercadorias</h2><span class="close-button" data-modal="modalEstoque">&times;</span></div>
+            <div class="modal-body">
+                <form id="formEstoque" class="form-grid">
+                    <div class="form-group"><label>Produto:</label><input type="text" id="eProduto" required></div>
+                    <div class="form-group"><label>Comprado de quem?</label><input type="text" id="eFornecedor" required></div>
+                    <div class="form-group"><label>Quantidade:</label><input type="number" id="eQtd" step="0.01" required></div>
+                    <div class="form-group"><label>Tipo:</label>
+                        <select id="eTipo" required><option value="peso">Peso (Kg)</option><option value="caixa">Caixa</option><option value="unidade">Unidade</option></select>
+                    </div>
+                    <div class="form-group" style="grid-column: span 2;">
+                        <label>Preço que você pagou em cada item (Custo Un. R$):</label>
+                        <input type="number" id="eCusto" step="0.01" placeholder="Ex: 5,00" required>
+                    </div>
+                    <button type="submit" class="btn btn-info" style="grid-column: span 2; padding: 15px;">Salvar Compra de Mercadoria</button>
+                </form>
+                <input type="text" id="buscaEstoque" placeholder="Procurar Mercadoria..." style="width: 100%; padding: 10px; margin-top: 15px; margin-bottom: 10px; border: 1px solid var(--border-color);">
+                <table class="java-table">
+                    <thead><tr><th>Data</th><th>Produto</th><th>Comprado de</th><th>Qtd</th><th>Valor Total</th><th>Ações</th></tr></thead>
+                    <tbody id="listaEstoqueTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalGastos" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Despesas do Dia (Luz, Almoço, etc)</h2><span class="close-button" data-modal="modalGastos">&times;</span></div>
+            <div class="modal-body">
+                <form id="formGastos" class="form-grid">
+                    <div class="form-group"><label>O que foi gasto?</label><input type="text" id="gDescricao" placeholder="Ex: Combustível, Almoço..." required></div>
+                    <div class="form-group"><label>Qual o valor (R$)?</label><input type="number" id="gValor" step="0.01" required></div>
+                    <button type="submit" class="btn btn-danger" style="grid-column: span 2; padding: 15px;">Salvar Despesa</button>
+                </form>
+                <h3 style="margin-top: 20px;">Despesas Anotadas</h3>
+                <table class="java-table">
+                    <thead><tr><th>Data</th><th>Descrição do Gasto</th><th>Valor</th><th>Ações</th></tr></thead>
+                    <tbody id="listaGastosTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalCupons" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2 id="tituloModalCupons">Cupons</h2><span class="close-button" data-modal="modalCupons">&times;</span></div>
+            <div class="modal-body">
+                <div class="search-filters">
+                    <input type="text" id="cBusca" placeholder="Buscar Cliente ou Produto" style="flex-grow: 1; padding: 10px;">
+                    <input type="date" id="cDataFiltro" style="padding: 10px;">
+                </div>
+                <table class="java-table">
+                    <thead><tr><th>Data</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Situação</th><th>Ações</th></tr></thead>
+                    <tbody id="listaCuponsTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalUsuarios" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h2>Gestão de Usuários</h2><span class="close-button" data-modal="modalUsuarios">&times;</span></div>
+            <div class="modal-body">
+                <form id="formUsuario" class="form-grid">
+                    <div class="form-group"><label>Novo Usuário:</label><input type="text" id="uNome" required></div>
+                    <div class="form-group"><label>Senha:</label><input type="password" id="uSenha" required></div>
+                    <button type="submit" class="btn btn-primary" style="grid-column: span 2;">Criar Usuário</button>
+                </form>
+                <table class="java-table" style="margin-top: 20px;">
+                    <thead><tr><th>Usuário</th><th style="width: 100px;">Ações</th></tr></thead>
+                    <tbody id="listaUsuariosTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div id="cupomParaImprimir">
-        <div class="cupom-print-content">
-            <div class="cupom-header">
-                <h2>** SIMÕES E VERDURAS **</h2>
-                <p>PV MFE-A MODULO 74</p>
-                <p>Telefone: (11) 9 7218-7346</p>
-                <p class="separator">----------------------------------------</p>
-                <p>COMPROVANTE DE VENDA - SEM VALOR FISCAL</p>
-                <p class="separator">----------------------------------------</p>
-            </div>
-            <div class="cupom-body">
-                <div class="info-line"><span>ID do Cupom:</span><strong id="print-id"></strong></div>
-                <div class="info-line"><span>Data/Hora:</span><span id="print-data"></span></div>
-                <div class="info-line"><span>Cliente:</span><strong id="print-cliente"></strong></div>
-                <hr class="dashed">
-                <div class="info-line"><span>Produto:</span><span id="print-produto"></span></div>
-                <div class="info-line"><span>Tipo/Qtd:</span><span id="print-tipo-qtd"></span></div>
-                <div class="info-line"><span>Preço/Item:</span><span id="print-preco-unitario"></span></div>
-                <hr class="dashed">
-                <div class="info-line"><span>Status:</span><strong id="print-status"></strong></div>
-                <hr class="dashed">
-                <div class="info-line total"><span>VALOR TOTAL:</span><strong>R$ <span id="print-valor"></span></strong></div>
-                <hr class="dashed">
-            </div>
-            <div class="cupom-footer">
-                <p class="separator">----------------------------------------</p>
-                <p>Obrigado pela preferência!</p>
-                <br>
-                <p>________________________________________</p>
-                <p>Assinatura do Cliente</p>
-            </div>
+        <div class="cupom-header">
+            <h2>** SIMÕES E VERDURAS **</h2><p>PV MFE-A MODULO 74</p><p>Telefone: (11) 9 7218-7346</p>
+            <p class="separator">----------------------------------------</p>
+            <p>COMPROVANTE DE VENDA</p>
+            <p class="separator">----------------------------------------</p>
         </div>
-    </div>
-    
-    <div id="gastoModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Registro de Despesa</h2>
-                <span class="close-button">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="gastoForm">
-                    <div class="form-group">
-                        <label for="descricaoGasto">Descrição da Despesa:</label>
-                        <input type="text" id="descricaoGasto" placeholder="Ex: Combustível, Salário" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="valorGasto">Valor (R$):</label>
-                        <input type="number" id="valorGasto" step="0.01" placeholder="Ex: 50.00" required>
-                    </div>
-                    <button type="submit" class="btn btn-danger">Adicionar Despesa</button>
-                </form>
-                <hr>
-                <h3>Despesas de Hoje (<span id="gastoDateDisplay"></span>)</h3>
-                <div id="gastosLista">
-                    <p>Nenhuma despesa registrada.</p>
-                </div>
-                <div class="gastos-total">
-                    <strong>Total Despesas:</strong> <span id="valorTotalGastos">R$ 0,00</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div id="estoqueModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Gerenciar Estoque</h2>
-                <span class="close-button">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="estoqueForm">
-                    <div class="form-group">
-                        <label for="nomeProdutoEstoque">Nome do Produto:</label>
-                        <input type="text" id="nomeProdutoEstoque" placeholder="Ex: Tomate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="fornecedorEstoque">Fornecedor:</label>
-                        <input type="text" id="fornecedorEstoque" placeholder="Ex: Fazenda Boa Colheita" required>
-                    </div>
-                    <div class="form-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 0;">
-                        <div class="form-group">
-                            <label for="qtdProdutoEstoque">Quantidade:</label>
-                            <input type="number" id="qtdProdutoEstoque" step="0.01" placeholder="Qtd a adicionar" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="tipoProdutoEstoque">Tipo:</label>
-                            <select id="tipoProdutoEstoque" required>
-                                <option value="peso">Peso (Kg)</option>
-                                <option value="caixa">Caixa (Un.)</option>
-                                <option value="unidade">Unidade (Pç)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="dataProdutoEstoque">Data de Entrada:</label>
-                        <input type="date" id="dataProdutoEstoque" required>
-                    </div>
-                    <button type="submit" class="btn btn-success" style="width: 100%; background-color: #17a2b8;">Adicionar ao Estoque</button>
-                </form>
-                <hr>
-                <h3>Estoque Atual</h3>
-                <input type="text" id="searchEstoque" placeholder="Filtrar produtos..." style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px;">
-                <div id="listaEstoqueContainer" style="max-height: 300px; overflow-y: auto;">
-                    </div>
-            </div>
+        <div class="info-line"><span>Data/Hora:</span><span id="pData"></span></div>
+        <div class="info-line"><span>Operador:</span><strong id="pOperador"></strong></div>
+        <div class="info-line"><span>Cliente:</span><strong id="pCliente"></strong></div>
+        <hr class="dashed">
+        <div class="info-line"><span>Produto:</span><span id="pProduto"></span></div>
+        <div class="info-line"><span>Qtd/Tipo:</span><span id="pQtd"></span></div>
+        <div class="info-line"><span>Preço/Item:</span><span>R$ <span id="pPreco"></span></span></div>
+        <hr class="dashed">
+        <div class="info-line"><span>Pagamento:</span><strong id="pPagamento"></strong></div>
+        <hr class="dashed">
+        <div class="info-line total" style="font-size: 16px; font-weight: bold;"><span>VALOR TOTAL:</span><strong>R$ <span id="pTotal"></span></strong></div>
+        <hr class="dashed">
+        <div style="text-align: center; margin-top: 15px;">
+            <p>Obrigado pela preferência!</p><br><br><p>___________________________________</p><p>Assinatura do Cliente</p>
         </div>
     </div>
 
-    <div id="pagosModal" class="modal">
-        <div class="modal-content modal-cupons">
-            <div class="modal-header">
-                <h2>Cupons Pagos (À Vista / Quitados)</h2>
-                <span class="close-button">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="modal-filters">
-                    <input type="text" id="pagosSearchInput" placeholder="Pesquisar por Cliente/ID/Produto">
-                    <input type="date" id="pagosDateInput">
-                    <button id="pagosClearDateBtn" class="btn btn-secondary btn-small">Ver Todos</button>
-                </div>
-                <div id="cuponsPagosModalContainer" class="cupons-container-modal">
-                    <p>Clique em "Ver Todos" ou selecione uma data para carregar os cupons.</p>
-                </div>
-            </div>
+    <div id="relatorioParaImprimir">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="font-size: 24px;">SIMÕES E VERDURAS</h2>
+            <h3 style="font-size: 18px;">RELATÓRIO FINANCEIRO FÁCIL</h3>
+            <p style="font-size: 16px;">De: <span id="printRelPeriodo"></span></p>
         </div>
-    </div>
-    
-    <div id="pendentesModal" class="modal">
-        <div class="modal-content modal-cupons">
-            <div class="modal-header">
-                <h2>Cupons Pendentes (A Prazo)</h2>
-                <span class="close-button">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="modal-filters">
-                    <input type="text" id="pendentesSearchInput" placeholder="Pesquisar por Cliente/ID/Produto">
-                    <input type="date" id="pendentesDateInput">
-                    <button id="pendentesClearDateBtn" class="btn btn-secondary btn-small">Ver Todos</button>
-                </div>
-                <div id="cuponsPendentesModalContainer" class="cupons-container-modal">
-                    <p>Clique em "Ver Todos" ou selecione uma data para carregar os cupons.</p>
-                </div>
-            </div>
+        
+        <div style="border: 2px solid #000; padding: 15px; margin-bottom: 20px; font-size: 18px; border-radius: 8px;">
+            <p style="margin-bottom: 10px;"><strong>Vendas (Dinheiro que Entrou):</strong> <span id="printRelTotalEntradas" style="color: green; float: right;"></span></p>
+            <p style="margin-bottom: 10px;"><strong>Despesas Extras (Saiu):</strong> <span id="printRelTotalSaidas" style="color: red; float: right;"></span></p>
+            <p style="margin-bottom: 10px;"><strong>Mercadorias Compradas (Saiu):</strong> <span id="printRelTotalEstoque" style="color: red; float: right;"></span></p>
+            <hr style="border-top: 2px solid #000; margin: 15px 0;">
+            <p style="font-size: 24px; text-align: center;"><strong>LUCRO (O QUE SOBROU):</strong> <br><br><span id="printRelTotalLiquido" style="font-size: 30px;"></span></p>
         </div>
+
+        <table>
+            <thead>
+                <tr><th>Data</th><th>Entrou (Vendas)</th><th>Saiu (Tudo)</th><th>Sobrou no Dia</th></tr>
+            </thead>
+            <tbody id="printRelTbody">
+                </tbody>
+        </table>
+        <p style="margin-top: 20px; font-size: 12px; text-align: center;">Gerado pelo Sistema ERP em: <script>document.write(new Date().toLocaleString())</script></p>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="script.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyDzr5fh8bOu_AJzYB7fxhnpEjuPeKRNfuQ",
+            authDomain: "sistema-simoes-e-veras.firebaseapp.com",
+            projectId: "sistema-simoes-e-veras",
+            storageBucket: "sistema-simoes-e-veras.firebasestorage.app",
+            messagingSenderId: "1051569295830",
+            appId: "1:1051569295830:web:816c88f79286159d5dd477"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // CACHE DE DADOS
+        let usuariosCache = []; let vendasCache = []; let estoqueCache = []; let gastosCache = [];
+        let currentUser = null; let modoVisualizacaoCupons = 'pagos';
+
+        // UTILITÁRIOS
+        const getHojeStr = () => { const tz = (new Date()).getTimezoneOffset() * 60000; return (new Date(Date.now() - tz)).toISOString().split('T')[0]; };
+        const formataData = (d) => { if(!d) return ""; const p = d.split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d; };
+        document.getElementById('dataHojeResumo').innerText = formataData(getHojeStr());
+
+        // ================= INICIALIZAÇÃO E SESSÃO =================
+        async function initSystem() {
+            try {
+                const qSnap = await getDocs(collection(db, "usuarios"));
+                usuariosCache = qSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if (usuariosCache.length === 0) {
+                    const adminRef = await addDoc(collection(db, "usuarios"), { username: "admin", password: "1996" });
+                    usuariosCache.push({ id: adminRef.id, username: "admin", password: "1996" });
+                }
+
+                // VERIFICA SESSÃO SALVA (Para não deslogar no F5)
+                const savedUser = sessionStorage.getItem('loggedUser');
+                if (savedUser) {
+                    const parsedUser = JSON.parse(savedUser);
+                    const stillExists = usuariosCache.find(u => u.username === parsedUser.username && u.password === parsedUser.password);
+                    if (stillExists) {
+                        currentUser = stillExists;
+                        document.getElementById('btnAcessar').innerText = "Carregando Dados...";
+                        await carregarTodosOsDados();
+                        document.getElementById('loginScreen').style.display = 'none';
+                        document.getElementById('mainSystem').style.display = 'flex';
+                        document.getElementById('currentUserDisplay').innerText = `Usuário: ${currentUser.username.toUpperCase()}`;
+                    } else {
+                        sessionStorage.removeItem('loggedUser'); // Se trocaram a senha ou apagaram o user, desloga
+                    }
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function carregarTodosOsDados() {
+            const [vSnap, eSnap, gSnap] = await Promise.all([ getDocs(collection(db, "vendas")), getDocs(collection(db, "estoque")), getDocs(collection(db, "gastos")) ]);
+            vendasCache = vSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            estoqueCache = eSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            gastosCache = gSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+            atualizarDatalistProdutos(); atualizarResumoDoDia();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = document.getElementById('loginUser').value.trim(); const pass = document.getElementById('loginPass').value.trim();
+            const validUser = usuariosCache.find(u => u.username === user && u.password === pass);
+
+            if (validUser) {
+                currentUser = validUser;
+                // SALVA A SESSÃO NA MEMÓRIA DA ABA
+                sessionStorage.setItem('loggedUser', JSON.stringify(currentUser));
+                
+                document.getElementById('btnAcessar').innerText = "Carregando Dados...";
+                await carregarTodosOsDados();
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainSystem').style.display = 'flex';
+                document.getElementById('currentUserDisplay').innerText = `Usuário: ${currentUser.username.toUpperCase()}`;
+            } else {
+                document.getElementById('loginError').innerText = "Usuário ou senha incorretos!";
+                document.getElementById('loginError').style.display = 'block';
+            }
+        });
+
+        // DESLOGAR (Limpa a sessão)
+        document.getElementById('logoutBtn').addEventListener('click', () => { 
+            if(confirm("Sair do sistema?")) {
+                sessionStorage.removeItem('loggedUser');
+                location.reload(); 
+            }
+        });
+
+        // ================= VENDAS E IMPRESSÃO (CUPOM) =================
+        const vQtd = document.getElementById('vQtd'); const vPreco = document.getElementById('vPreco'); const vTotalDisplay = document.getElementById('vTotalDisplay');
+        const calculaTotal = () => { vTotalDisplay.value = ((parseFloat(vQtd.value)||0) * (parseFloat(vPreco.value)||0)).toFixed(2); };
+        vQtd.addEventListener('input', calculaTotal); vPreco.addEventListener('input', calculaTotal);
+
+        document.getElementById('vendaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const total = parseFloat(vTotalDisplay.value); if(total <= 0) return alert("Total inválido!");
+            const novaVenda = {
+                produto: document.getElementById('vProduto').value, cliente: document.getElementById('vCliente').value,
+                tipo: document.getElementById('vTipo').value, pagamento: document.getElementById('vPagamento').value,
+                preco: parseFloat(vPreco.value), qtd: parseFloat(vQtd.value), motorista: document.getElementById('vMotorista').value,
+                placa: document.getElementById('vPlaca').value, total: total, data: getHojeStr(), hora: new Date().toLocaleTimeString()
+            };
+            try {
+                const docRef = await addDoc(collection(db, "vendas"), novaVenda);
+                novaVenda.id = docRef.id; vendasCache.push(novaVenda);
+                atualizarResumoDoDia(); imprimirCupom(novaVenda);
+                e.target.reset(); vTotalDisplay.value = "0.00";
+            } catch(err) { alert("Erro ao salvar."); }
+        });
+
+        function imprimirCupom(venda) {
+            document.getElementById('pData').innerText = `${formataData(venda.data)} ${venda.hora || ''}`;
+            document.getElementById('pOperador').innerText = currentUser ? currentUser.username.toUpperCase() : "SISTEMA";
+            document.getElementById('pCliente').innerText = venda.cliente.toUpperCase();
+            document.getElementById('pProduto').innerText = venda.produto;
+            document.getElementById('pQtd').innerText = `${venda.qtd} (${venda.tipo})`;
+            document.getElementById('pPreco').innerText = venda.preco.toFixed(2);
+            document.getElementById('pPagamento').innerText = venda.pagamento === 'avista' ? 'À VISTA (PAGO)' : 'A PRAZO (PENDENTE)';
+            document.getElementById('pTotal').innerText = venda.total.toFixed(2);
+            
+            const cupomDiv = document.getElementById('cupomParaImprimir');
+            cupomDiv.classList.add('is-printing');
+            window.print();
+            cupomDiv.classList.remove('is-printing');
+        }
+
+        // ================= RESUMO DIÁRIO FÁCIL =================
+        function atualizarResumoDoDia() {
+            const hoje = getHojeStr(); 
+            let sumEntradas = 0; let sumDespesas = 0; 
+            
+            vendasCache.forEach(v => { if(v.data === hoje && v.pagamento === 'avista') sumEntradas += (parseFloat(v.total) || 0); });
+            gastosCache.forEach(g => { if(g.data === hoje) sumDespesas += (parseFloat(g.valor) || 0); });
+            
+            const liq = sumEntradas - sumDespesas;
+            
+            document.getElementById('totalEntradas').innerText = `R$ ${sumEntradas.toFixed(2)}`;
+            document.getElementById('totalSaidas').innerText = `R$ ${sumDespesas.toFixed(2)}`;
+            document.getElementById('lucroLiquido').innerText = `R$ ${liq.toFixed(2)}`;
+            document.getElementById('lucroLiquido').style.color = liq >= 0 ? 'var(--primary-blue)' : 'var(--danger)';
+        }
+
+        document.getElementById('btnToggleResumo').addEventListener('click', function() {
+            const resumo = document.getElementById('resumoValores');
+            if (resumo.style.display === 'none') {
+                resumo.style.display = 'block'; this.innerHTML = '<i class="fas fa-eye-slash"></i> Esconder Dinheiro';
+            } else {
+                resumo.style.display = 'none'; this.innerHTML = '<i class="fas fa-eye"></i> Mostrar Dinheiro do Caixa';
+            }
+        });
+
+        // ================= MODAIS =================
+        document.querySelectorAll('.close-button').forEach(btn => {
+            btn.addEventListener('click', () => { document.getElementById(btn.getAttribute('data-modal')).style.display = 'none'; });
+        });
+
+        // ================= ESTOQUE =================
+        document.getElementById('btnModalEstoque').addEventListener('click', () => { renderEstoque(); document.getElementById('modalEstoque').style.display = 'block'; });
+        function atualizarDatalistProdutos() {
+            const dl = document.getElementById('listaProdutosDatalist'); dl.innerHTML = '';
+            [...new Set(estoqueCache.map(e => e.produto))].forEach(p => dl.appendChild(new Option(p, p)));
+        }
+        function renderEstoque(filtro = "") {
+            const tbody = document.getElementById('listaEstoqueTbody'); tbody.innerHTML = '';
+            estoqueCache.filter(e => e.produto.toLowerCase().includes(filtro.toLowerCase())).forEach(e => {
+                const tr = document.createElement('tr');
+                const custoFormated = (parseFloat(e.custoTotal) || 0).toFixed(2);
+                tr.innerHTML = `<td>${formataData(e.data)}</td><td>${e.produto}</td><td>${e.fornecedor}</td><td>${e.qtd} ${e.tipo}</td>
+                                <td style="color:red;">R$ ${custoFormated}</td>
+                                <td><button class="btn btn-danger btn-sm" onclick="excluirEstoque('${e.id}')"><i class="fas fa-trash"></i></button></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+        document.getElementById('buscaEstoque').addEventListener('input', (e) => renderEstoque(e.target.value));
+        document.getElementById('formEstoque').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const qtd = parseFloat(document.getElementById('eQtd').value); const custoUnitario = parseFloat(document.getElementById('eCusto').value);
+            const obj = { produto: document.getElementById('eProduto').value, fornecedor: document.getElementById('eFornecedor').value, qtd: qtd, tipo: document.getElementById('eTipo').value, custoUnitario: custoUnitario, custoTotal: qtd * custoUnitario, data: getHojeStr() };
+            try { const r = await addDoc(collection(db, "estoque"), obj); obj.id = r.id; estoqueCache.push(obj); renderEstoque(); atualizarDatalistProdutos(); atualizarResumoDoDia(); e.target.reset(); } catch(err) { alert("Erro."); }
+        });
+        window.excluirEstoque = async (id) => { if(confirm("Excluir item comprado?")) { await deleteDoc(doc(db, "estoque", id)); estoqueCache = estoqueCache.filter(e => e.id !== id); renderEstoque(); atualizarDatalistProdutos(); atualizarResumoDoDia(); } };
+
+        // ================= GASTOS =================
+        document.getElementById('btnModalGastos').addEventListener('click', () => { renderGastos(); document.getElementById('modalGastos').style.display = 'block'; });
+        function renderGastos() {
+            const tbody = document.getElementById('listaGastosTbody'); tbody.innerHTML = '';
+            [...gastosCache].reverse().forEach(g => {
+                const tr = document.createElement('tr'); tr.innerHTML = `<td>${formataData(g.data)}</td><td>${g.descricao}</td><td>R$ ${(parseFloat(g.valor)||0).toFixed(2)}</td><td><button class="btn btn-danger btn-sm" onclick="excluirGasto('${g.id}')"><i class="fas fa-trash"></i></button></td>`; tbody.appendChild(tr);
+            });
+        }
+        document.getElementById('formGastos').addEventListener('submit', async (e) => {
+            e.preventDefault(); const obj = { descricao: document.getElementById('gDescricao').value, valor: parseFloat(document.getElementById('gValor').value), data: getHojeStr() };
+            try { const r = await addDoc(collection(db, "gastos"), obj); obj.id = r.id; gastosCache.push(obj); renderGastos(); atualizarResumoDoDia(); e.target.reset(); } catch(err) { alert("Erro."); }
+        });
+        window.excluirGasto = async (id) => { if(confirm("Excluir despesa?")) { await deleteDoc(doc(db, "gastos", id)); gastosCache = gastosCache.filter(e => e.id !== id); renderGastos(); atualizarResumoDoDia(); } };
+
+        // ================= CUPONS =================
+        document.getElementById('btnModalPendentes').addEventListener('click', () => { modoVisualizacaoCupons = 'aprazo'; document.getElementById('tituloModalCupons').innerText = 'Cupons Pendentes (Fiado)'; renderCupons(); document.getElementById('modalCupons').style.display = 'block'; });
+        document.getElementById('btnModalPagos').addEventListener('click', () => { modoVisualizacaoCupons = 'avista'; document.getElementById('tituloModalCupons').innerText = 'Cupons Pagos'; renderCupons(); document.getElementById('modalCupons').style.display = 'block'; });
+        document.getElementById('cBusca').addEventListener('input', renderCupons); document.getElementById('cDataFiltro').addEventListener('change', renderCupons);
+
+        function renderCupons() {
+            const tbody = document.getElementById('listaCuponsTbody'); tbody.innerHTML = '';
+            const busca = document.getElementById('cBusca').value.toLowerCase(); const dataFiltro = document.getElementById('cDataFiltro').value;
+            const filtrados = vendasCache.filter(v => v.pagamento === modoVisualizacaoCupons && (v.cliente.toLowerCase().includes(busca) || v.produto.toLowerCase().includes(busca)) && (dataFiltro ? v.data === dataFiltro : true));
+
+            filtrados.sort((a, b) => new Date(b.data) - new Date(a.data)).forEach(v => {
+                const tr = document.createElement('tr');
+                let botoes = `<button class="btn btn-secondary btn-sm" onclick="reimprimirVenda('${v.id}')"><i class="fas fa-print"></i></button> `;
+                botoes += modoVisualizacaoCupons === 'aprazo' ? `<button class="btn btn-success btn-sm" onclick="quitarVenda('${v.id}')"><i class="fas fa-check"></i> Quitar</button>` : `<button class="btn btn-danger btn-sm" onclick="excluirVenda('${v.id}')"><i class="fas fa-trash"></i></button>`;
+                tr.innerHTML = `<td>${formataData(v.data)}</td><td>${v.cliente}</td><td>${v.produto}</td><td>R$ ${(parseFloat(v.total)||0).toFixed(2)}</td><td><span style="color:${v.pagamento==='avista'?'green':'red'}; font-weight:bold;">${v.pagamento.toUpperCase()}</span></td><td>${botoes}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+        window.reimprimirVenda = (id) => { const v = vendasCache.find(x => x.id === id); if(v) imprimirCupom(v); };
+        window.quitarVenda = async (id) => { if(confirm("Confirmar que o cliente pagou este valor?")) { await updateDoc(doc(db, "vendas", id), { pagamento: 'avista' }); const v = vendasCache.find(x => x.id === id); if(v) v.pagamento = 'avista'; renderCupons(); atualizarResumoDoDia(); } };
+        window.excluirVenda = async (id) => { if(confirm("EXCLUIR esta venda?")) { await deleteDoc(doc(db, "vendas", id)); vendasCache = vendasCache.filter(x => x.id !== id); renderCupons(); atualizarResumoDoDia(); } };
+
+        // ================= USUÁRIOS =================
+        document.getElementById('btnModalUsuarios').addEventListener('click', () => { renderUsuarios(); document.getElementById('modalUsuarios').style.display = 'block'; });
+        function renderUsuarios() {
+            const tbody = document.getElementById('listaUsuariosTbody'); tbody.innerHTML = '';
+            usuariosCache.forEach(u => { const tr = document.createElement('tr'); tr.innerHTML = `<td><strong>${u.username}</strong></td><td><button class="btn btn-danger btn-sm" onclick="excluirUsuario('${u.id}')" ${u.username.toLowerCase()==='admin'?'disabled style="opacity:0.5"':''}><i class="fas fa-trash"></i></button></td>`; tbody.appendChild(tr); });
+        }
+        document.getElementById('formUsuario').addEventListener('submit', async (e) => {
+            e.preventDefault(); const u = document.getElementById('uNome').value.trim(); const p = document.getElementById('uSenha').value.trim();
+            if(usuariosCache.some(us => us.username.toLowerCase() === u.toLowerCase())) return alert("Usuário já existe!");
+            const r = await addDoc(collection(db, "usuarios"), {username: u, password: p}); usuariosCache.push({id: r.id, username: u, password: p}); renderUsuarios(); e.target.reset();
+        });
+        window.excluirUsuario = async (id) => { if(confirm("Excluir usuário?")) { await deleteDoc(doc(db, "usuarios", id)); usuariosCache = usuariosCache.filter(u => u.id !== id); renderUsuarios(); } };
+
+        // ================= RELATÓRIO FÁCIL =================
+        document.getElementById('btnModalRelatorios').addEventListener('click', () => {
+            document.getElementById('resultadoRelatorio').style.display = 'none';
+            document.getElementById('modalRelatorios').style.display = 'block'; 
+        });
+
+        document.getElementById('btnGerarRelatorio').addEventListener('click', () => {
+            const dInicio = document.getElementById('relDataInicio').value;
+            const dFim = document.getElementById('relDataFim').value;
+            if(!dInicio || !dFim) return alert("Selecione a Data Inicial e Final.");
+
+            const dias = {};
+            const addDia = (data) => { if(!dias[data]) dias[data] = { entradas: 0, despesas: 0, estoque: 0 }; };
+
+            vendasCache.forEach(v => { if(v.data >= dInicio && v.data <= dFim && v.pagamento === 'avista') { addDia(v.data); dias[v.data].entradas += (parseFloat(v.total) || 0); } });
+            estoqueCache.forEach(e => { if(e.data >= dInicio && e.data <= dFim) { addDia(e.data); dias[e.data].estoque += (parseFloat(e.custoTotal) || 0); } });
+            gastosCache.forEach(g => { if(g.data >= dInicio && g.data <= dFim) { addDia(g.data); dias[g.data].despesas += (parseFloat(g.valor) || 0); } });
+
+            const tbodyTela = document.getElementById('relatorioTbody'); tbodyTela.innerHTML = '';
+            const tbodyPrint = document.getElementById('printRelTbody'); tbodyPrint.innerHTML = '';
+            
+            let totalGeralEntradas = 0; let totalGeralDespesas = 0; let totalGeralEstoque = 0;
+            const datasOrdenadas = Object.keys(dias).sort();
+
+            datasOrdenadas.forEach(d => {
+                const ent = dias[d].entradas; const desp = dias[d].despesas; const est = dias[d].estoque;
+                const totalQueSaiu = desp + est; 
+                const sobrouNoDia = ent - totalQueSaiu;
+
+                totalGeralEntradas += ent; totalGeralDespesas += desp; totalGeralEstoque += est;
+
+                const tr = `<tr>
+                    <td><strong>${formataData(d)}</strong></td>
+                    <td style="color: green;">R$ ${ent.toFixed(2)}</td>
+                    <td style="color: red;">R$ ${totalQueSaiu.toFixed(2)}</td>
+                    <td style="color: ${sobrouNoDia >= 0 ? 'var(--primary-blue)' : 'var(--danger)'}; font-weight: bold;">R$ ${sobrouNoDia.toFixed(2)}</td>
+                </tr>`;
+                tbodyTela.innerHTML += tr; tbodyPrint.innerHTML += tr;
+            });
+
+            const liquidoFinal = totalGeralEntradas - (totalGeralDespesas + totalGeralEstoque);
+
+            document.getElementById('relTotalEntradas').innerText = `R$ ${totalGeralEntradas.toFixed(2)}`;
+            document.getElementById('relTotalSaidas').innerText = `R$ ${totalGeralDespesas.toFixed(2)}`;
+            document.getElementById('relTotalEstoque').innerText = `R$ ${totalGeralEstoque.toFixed(2)}`;
+            document.getElementById('relTotalLiquido').innerText = `R$ ${liquidoFinal.toFixed(2)}`;
+            document.getElementById('relTotalLiquido').style.color = liquidoFinal >= 0 ? 'var(--primary-blue)' : 'red';
+
+            document.getElementById('printRelPeriodo').innerText = `${formataData(dInicio)} até ${formataData(dFim)}`;
+            document.getElementById('printRelTotalEntradas').innerText = `R$ ${totalGeralEntradas.toFixed(2)}`;
+            document.getElementById('printRelTotalSaidas').innerText = `R$ ${totalGeralDespesas.toFixed(2)}`;
+            document.getElementById('printRelTotalEstoque').innerText = `R$ ${totalGeralEstoque.toFixed(2)}`;
+            document.getElementById('printRelTotalLiquido').innerText = `R$ ${liquidoFinal.toFixed(2)}`;
+            document.getElementById('printRelTotalLiquido').style.color = liquidoFinal >= 0 ? 'blue' : 'red';
+
+            document.getElementById('resultadoRelatorio').style.display = 'block';
+            window.relatorioPDF = { datas: datasOrdenadas, dias: dias, totais: { ent: totalGeralEntradas, desp: totalGeralDespesas, est: totalGeralEstoque, liq: liquidoFinal }, periodo: `${formataData(dInicio)} até ${formataData(dFim)}` };
+        });
+
+        document.getElementById('btnImprimirRelatorio').addEventListener('click', () => {
+            const relatorioDiv = document.getElementById('relatorioParaImprimir');
+            relatorioDiv.classList.add('is-printing'); window.print(); relatorioDiv.classList.remove('is-printing');
+        });
+
+        document.getElementById('btnBaixarPDF').addEventListener('click', () => {
+            if(!window.relatorioPDF) return;
+            const { jsPDF } = window.jspdf; const doc = new jsPDF();
+            
+            doc.setFontSize(22); doc.text("SIMÕES E VERDURAS", 14, 20);
+            doc.setFontSize(14); doc.text("Relatório Financeiro Fácil", 14, 28);
+            doc.setFontSize(12); doc.text(`Período analisado: ${window.relatorioPDF.periodo}`, 14, 35);
+            
+            doc.setDrawColor(0); doc.setFillColor(240, 240, 240); doc.rect(14, 40, 180, 55, 'FD');
+            doc.setFontSize(12);
+            doc.text(`Vendas (Dinheiro que Entrou): R$ ${window.relatorioPDF.totais.ent.toFixed(2)}`, 20, 50);
+            doc.text(`Despesas Diversas (Saiu): R$ ${window.relatorioPDF.totais.desp.toFixed(2)}`, 20, 60);
+            doc.text(`Mercadorias Compradas (Saiu): R$ ${window.relatorioPDF.totais.est.toFixed(2)}`, 20, 70);
+            doc.setFontSize(16); doc.setFont("helvetica", "bold");
+            doc.text(`LUCRO (O que sobrou): R$ ${window.relatorioPDF.totais.liq.toFixed(2)}`, 20, 85);
+            doc.setFont("helvetica", "normal");
+            
+            const bodyTabela = window.relatorioPDF.datas.map(d => {
+                const dia = window.relatorioPDF.dias[d]; const totalSaiuNoDia = dia.despesas + dia.estoque;
+                return [formataData(d), `R$ ${dia.entradas.toFixed(2)}`, `R$ ${totalSaiuNoDia.toFixed(2)}`, `R$ ${(dia.entradas - totalSaiuNoDia).toFixed(2)}`];
+            });
+
+            doc.autoTable({ startY: 105, head: [['Data', 'Entrou (Vendas)', 'Saiu (Tudo)', 'Sobrou no Dia']], body: bodyTabela, theme: 'grid', headStyles: { fillColor: [0, 90, 156], fontSize: 13 }, bodyStyles: { fontSize: 12 } });
+            doc.save(`Relatorio_Facil_${getHojeStr()}.pdf`);
+        });
+
+        // ================= BACKUP E RESTAURAÇÃO =================
+        document.getElementById('btnBaixarBackup').addEventListener('click', () => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ usuarios: usuariosCache, vendas: vendasCache, estoque: estoqueCache, gastos: gastosCache }));
+            const anchor = document.createElement('a'); anchor.href = dataStr; anchor.download = `backup_simoes_${getHojeStr()}.json`;
+            document.body.appendChild(anchor); anchor.click(); anchor.remove();
+        });
+
+        document.getElementById('inputImportarBackup').addEventListener('change', async (e) => {
+            const file = e.target.files[0]; if(!file) return;
+            if(!confirm("CUIDADO: Isso irá mesclar/sobrescrever o banco de dados. Deseja continuar?")) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    document.getElementById('btnAcessar').innerText = "Restaurando Banco... Aguarde.";
+                    const dados = JSON.parse(event.target.result);
+                    const listColecoes = [{ name: "usuarios", data: dados.usuarios }, { name: "vendas", data: dados.vendas }, { name: "estoque", data: dados.estoque }, { name: "gastos", data: dados.gastos }];
+                    for (const col of listColecoes) {
+                        if(col.data && Array.isArray(col.data)) {
+                            for(const item of col.data) { const idOriginal = item.id; const dadoSemId = { ...item }; delete dadoSemId.id; await setDoc(doc(db, col.name, idOriginal), dadoSemId); }
+                        }
+                    }
+                    alert("Backup Restaurado com Sucesso! O sistema será reiniciado."); location.reload();
+                } catch(err) { alert("Erro ao ler ou gravar arquivo de backup."); }
+            };
+            reader.readAsText(file);
+        });
+
+        initSystem();
+    </script>
 </body>
 </html>
