@@ -120,7 +120,7 @@
     <div id="loginScreen" class="login-container">
         <div class="login-box">
             <div class="login-header">
-                <h2><i class="fas fa-leaf"></i> SIMÕES E VERDURAS</h2><p>Acesso Restrito</p>
+                <h2><i class="fas fa-leaf"></i> SIMÕES E VERAS</h2><p>Acesso Restrito</p>
             </div>
             <form id="loginForm">
                 <div class="form-group mb-10"><label>Usuário:</label><input type="text" id="loginUser" required autocomplete="off"></div>
@@ -134,7 +134,7 @@
     <div id="mainSystem" class="container" style="display: none;">
         
         <nav class="top-nav">
-            <div class="nav-brand">SIMÕES E VERDURAS ERP</div>
+            <div class="nav-brand">SIMÕES E VERAS ERP</div>
             <div class="nav-actions">
                 <span id="currentUserDisplay" style="font-weight: bold; margin-right: 15px;">Usuário: Admin</span>
                 <button id="btnModalUsuarios" class="btn btn-secondary btn-sm"><i class="fas fa-users"></i> Usuários</button>
@@ -349,7 +349,7 @@
 
     <div id="cupomParaImprimir">
         <div class="cupom-header">
-            <h2>** SIMÕES E VERDURAS **</h2><p>PV MFE-A MODULO 74</p><p>Telefone: (11) 9 7218-7346</p>
+            <h2>** SIMÕES E VERAS **</h2><p>PV MFE-A MODULO 74</p><p>Telefone: (11) 9 7218-7346</p>
             <p class="separator">----------------------------------------</p>
             <p>COMPROVANTE DE VENDA</p>
             <p class="separator">----------------------------------------</p>
@@ -373,7 +373,7 @@
 
     <div id="relatorioParaImprimir">
         <div style="text-align: center; margin-bottom: 20px;">
-            <h2 style="font-size: 24px;">SIMÕES E VERDURAS</h2>
+            <h2 style="font-size: 24px;">SIMÕES E VERAS</h2>
             <h3 style="font-size: 18px;">RELATÓRIO FINANCEIRO FÁCIL</h3>
             <p style="font-size: 16px;">De: <span id="printRelPeriodo"></span></p>
         </div>
@@ -699,7 +699,7 @@
             if(!window.relatorioPDF) return;
             const { jsPDF } = window.jspdf; const doc = new jsPDF();
             
-            doc.setFontSize(22); doc.text("SIMÕES E VERDURAS", 14, 20);
+            doc.setFontSize(22); doc.text("SIMÕES E VERAS", 14, 20);
             doc.setFontSize(14); doc.text("Relatório Financeiro Fácil", 14, 28);
             doc.setFontSize(12); doc.text(`Período analisado: ${window.relatorioPDF.periodo}`, 14, 35);
             
