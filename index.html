@@ -319,11 +319,11 @@
             <div class="modal-header"><h2 id="tituloModalCupons">Cupons</h2><span class="close-button" data-modal="modalCupons">&times;</span></div>
             <div class="modal-body">
                 <div class="search-filters">
-                    <input type="text" id="cBusca" placeholder="Buscar Cliente ou Produto" style="flex-grow: 1; padding: 10px;">
+                    <input type="text" id="cBusca" placeholder="Buscar Nº, Cliente ou Produto" style="flex-grow: 1; padding: 10px;">
                     <input type="date" id="cDataFiltro" style="padding: 10px;">
                 </div>
                 <table class="java-table">
-                    <thead><tr><th>Data</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Situação</th><th>Ações</th></tr></thead>
+                    <thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto</th><th>Total</th><th>Situação</th><th>Ações</th></tr></thead>
                     <tbody id="listaCuponsTbody"></tbody>
                 </table>
             </div>
@@ -354,6 +354,7 @@
             <p>COMPROVANTE DE VENDA</p>
             <p class="separator">----------------------------------------</p>
         </div>
+        <div class="info-line"><span>Nº do Cupom:</span><strong id="pCupomId"></strong></div>
         <div class="info-line"><span>Data/Hora:</span><span id="pData"></span></div>
         <div class="info-line"><span>Operador:</span><strong id="pOperador"></strong></div>
         <div class="info-line"><span>Cliente:</span><strong id="pCliente"></strong></div>
@@ -496,7 +497,12 @@
         document.getElementById('vendaForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const total = parseFloat(vTotalDisplay.value); if(total <= 0) return alert("Total inválido!");
+            
+            // GERAÇÃO DE ID ÚNICO PARA O CUPOM (6 dígitos numéricos)
+            const cupomIdGerado = Math.floor(100000 + Math.random() * 900000).toString();
+            
             const novaVenda = {
+                cupomId: cupomIdGerado,
                 produto: document.getElementById('vProduto').value, cliente: document.getElementById('vCliente').value,
                 tipo: document.getElementById('vTipo').value, pagamento: document.getElementById('vPagamento').value,
                 preco: parseFloat(vPreco.value), qtd: parseFloat(vQtd.value), motorista: document.getElementById('vMotorista').value,
@@ -511,6 +517,9 @@
         });
 
         function imprimirCupom(venda) {
+            // Exibe o Cupom ID, se for antigo e não tiver, mostra os primeiros 6 digitos do ID do banco
+            document.getElementById('pCupomId').innerText = venda.cupomId || venda.id.substring(0, 6).toUpperCase();
+            
             document.getElementById('pData').innerText = `${formataData(venda.data)} ${venda.hora || ''}`;
             document.getElementById('pOperador').innerText = currentUser ? currentUser.username.toUpperCase() : "SISTEMA";
             document.getElementById('pCliente').innerText = venda.cliente.toUpperCase();
@@ -603,14 +612,34 @@
 
         function renderCupons() {
             const tbody = document.getElementById('listaCuponsTbody'); tbody.innerHTML = '';
-            const busca = document.getElementById('cBusca').value.toLowerCase(); const dataFiltro = document.getElementById('cDataFiltro').value;
-            const filtrados = vendasCache.filter(v => v.pagamento === modoVisualizacaoCupons && (v.cliente.toLowerCase().includes(busca) || v.produto.toLowerCase().includes(busca)) && (dataFiltro ? v.data === dataFiltro : true));
+            const busca = document.getElementById('cBusca').value.toLowerCase(); 
+            const buscaNum = busca.replace('#', ''); // Limpa o "hashtag" caso o usuário digite #123456
+            const dataFiltro = document.getElementById('cDataFiltro').value;
+            
+            const filtrados = vendasCache.filter(v => 
+                v.pagamento === modoVisualizacaoCupons && 
+                (v.cliente.toLowerCase().includes(busca) || 
+                 v.produto.toLowerCase().includes(busca) || 
+                 (v.cupomId && v.cupomId.includes(buscaNum))) && 
+                (dataFiltro ? v.data === dataFiltro : true)
+            );
 
             filtrados.sort((a, b) => new Date(b.data) - new Date(a.data)).forEach(v => {
                 const tr = document.createElement('tr');
                 let botoes = `<button class="btn btn-secondary btn-sm" onclick="reimprimirVenda('${v.id}')"><i class="fas fa-print"></i></button> `;
                 botoes += modoVisualizacaoCupons === 'aprazo' ? `<button class="btn btn-success btn-sm" onclick="quitarVenda('${v.id}')"><i class="fas fa-check"></i> Quitar</button>` : `<button class="btn btn-danger btn-sm" onclick="excluirVenda('${v.id}')"><i class="fas fa-trash"></i></button>`;
-                tr.innerHTML = `<td>${formataData(v.data)}</td><td>${v.cliente}</td><td>${v.produto}</td><td>R$ ${(parseFloat(v.total)||0).toFixed(2)}</td><td><span style="color:${v.pagamento==='avista'?'green':'red'}; font-weight:bold;">${v.pagamento.toUpperCase()}</span></td><td>${botoes}</td>`;
+                
+                const showCupomId = v.cupomId || v.id.substring(0, 6).toUpperCase();
+                
+                tr.innerHTML = `
+                    <td><strong>#${showCupomId}</strong></td>
+                    <td>${formataData(v.data)}</td>
+                    <td>${v.cliente}</td>
+                    <td>${v.produto}</td>
+                    <td>R$ ${(parseFloat(v.total)||0).toFixed(2)}</td>
+                    <td><span style="color:${v.pagamento==='avista'?'green':'red'}; font-weight:bold;">${v.pagamento.toUpperCase()}</span></td>
+                    <td>${botoes}</td>
+                `;
                 tbody.appendChild(tr);
             });
         }
